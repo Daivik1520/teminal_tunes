@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VerseFlow - Lyrical Video Studio</title>
+    <meta name="description"
+        content="Create professional lyrical videos for YouTube with custom text styles, backgrounds, and 4K export">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo">
+                <span class="logo-icon">✨</span>
+                <h1>VerseFlow</h1>
+            </div>
+            <div class="header-actions">
+                <div class="undo-redo-group">
+                    <button id="undoBtn" class="header-btn" title="Undo (Ctrl+Z)" disabled>
+                        <span>↶</span>
+                    </button>
+                    <button id="redoBtn" class="header-btn" title="Redo (Ctrl+Y)" disabled>
+                        <span>↷</span>
+                    </button>
+                </div>
+                <button id="importProjectBtn" class="header-btn" title="Import Project">
+                    <span>📂</span>
+                </button>
+                <button id="exportProjectBtn" class="header-btn" title="Export Project">
+                    <span>💾</span>
+                </button>
+                <button id="helpBtn" class="header-btn" title="Keyboard Shortcuts (?)">
+                    <span>❓</span>
+                </button>
+                <button id="themeToggle" class="theme-toggle" title="Toggle theme">
+                    <span class="sun-icon">☀️</span>
+                    <span class="moon-icon">🌙</span>
+                </button>
+            </div>
+            <input type="file" id="projectFileInput" accept=".json" class="hidden">
+        </header>
+
+        <!-- Main Content - Video Editor Layout -->
+        <main class="main-content">
+            <!-- Top Section - Video Preview (Primary Focus) -->
+            <section class="preview-section">
+                <div class="preview-container">
+                    <div class="preview-header">
+                        <h2>👁️ Preview</h2>
+                        <div class="preview-options">
+                            <select id="aspectRatio" class="styled-select mini" title="Aspect Ratio">
+                                <option value="16:9">16:9</option>
+                                <option value="9:16">9:16 (Shorts)</option>
+                                <option value="1:1">1:1 (Square)</option>
+                                <option value="4:5">4:5 (Instagram)</option>
+                            </select>
+                            <span id="resolutionDisplay" class="resolution-badge">3840×2160</span>
+                        </div>
+                    </div>
+
+                    <div class="canvas-wrapper" id="canvasWrapper">
+                        <canvas id="previewCanvas" width="3840" height="2160"></canvas>
+                        <div id="canvasOverlay" class="canvas-overlay hidden">
+                            <div class="loading-spinner"></div>
+                            <p>Rendering...</p>
+                        </div>
+                    </div>
+
+                    <!-- Preview Controls Bar -->
+                    <div class="preview-controls">
+                        <button id="playBtn" class="control-btn play-btn" title="Play/Pause (Space)">
+                            <span class="play-icon">▶</span>
+                            <span class="pause-icon hidden">⏸</span>
+                        </button>
+                        <button id="stopBtn" class="control-btn" title="Stop">⏹</button>
+                        <div class="timeline-wrapper">
+                            <input type="range" id="timeline" min="0" max="100" value="0" class="timeline-slider">
+                            <div class="time-display">
+                                <span id="currentTime">00:00</span> / <span id="totalTime">00:00</span>
+                            </div>
+                        </div>
+                        <div class="speed-control" title="Preview Speed">
+                            <select id="previewSpeed" class="styled-select mini">
+                                <option value="0.5">0.5x</option>
+                                <option value="0.75">0.75x</option>
+                                <option value="1" selected>1x</option>
+                                <option value="1.5">1.5x</option>
+                                <option value="2">2x</option>
+                            </select>
+                        </div>
+                        <button id="karaokeToggle" class="control-btn karaoke-btn" title="Karaoke Mode">
+                            <span>🎤</span>
+                        </button>
+                    </div>
+
+                    <!-- Current Lyric Display -->
+                    <div class="current-lyric-display">
+                        <span class="label">Current:</span>
+                        <span id="currentLyricText" class="lyric-text">--</span>
+                    </div>
+                </div>
+
+                <!-- Export Sidebar -->
+                <div class="export-sidebar">
+
+
+                    <!-- Export Section -->
+                    <div class="export-settings-box">
+                        <h3>📥 Export</h3>
+                        <div class="setting-group">
+                            <label for="exportQuality">Quality</label>
+                            <select id="exportQuality" class="styled-select">
+                                <option value="4k">4K (3840×2160)</option>
+                                <option value="1080p">1080p (1920×1080)</option>
+                                <option value="720p">720p (1280×720)</option>
+                            </select>
+                        </div>
+                        <div class="setting-group">
+                            <label for="exportFps">FPS</label>
+                            <select id="exportFps" class="styled-select">
+                                <option value="30">30 fps</option>
+                                <option value="60">60 fps</option>
+                                <option value="24">24 fps</option>
+                            </select>
+                        </div>
+
+                        <button id="exportBtn" class="btn btn-export">
+                            <span class="export-icon">📥</span>
+                            Export Video
+                        </button>
+
+                        <div id="exportProgress" class="export-progress hidden">
+                            <div class="progress-bar">
+                                <div id="progressFill" class="progress-fill"></div>
+                            </div>
+                            <span id="progressText">Rendering: 0%</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Bottom Section - Tools Panel with Tabs -->
+            <section class="tools-panel">
+                <div class="tools-tabs">
+                    <button class="tool-tab active" data-tab="lyrics">📝 Lyrics</button>
+                    <button class="tool-tab" data-tab="styling">🎨 Text Styling</button>
+                    <button class="tool-tab" data-tab="background">🖼️ Background</button>
+                </div>
+
+                <div class="tools-content">
+                    <!-- Lyrics Tab -->
+                    <div class="tool-pane active" id="lyrics-pane">
+                        <div class="pane-header">
+                            <div class="section-header-actions">
+                                <button id="pasteBtn" class="btn btn-secondary btn-sm"
+                                    title="Paste from clipboard (Ctrl+V)">
+                                    <span>📋</span> Paste
+                                </button>
+                                <button id="bulkImportBtn" class="btn btn-secondary btn-sm" title="Bulk import lyrics">
+                                    <span>📥</span> Bulk Import
+                                </button>
+                                <button id="clearAllBtn" class="btn btn-secondary btn-sm btn-danger"
+                                    title="Clear all lyrics">
+                                    <span>🗑️</span> Clear All
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="lyricsContainer" class="lyrics-container">
+                            <!-- Lyrics lines will be added here dynamically -->
+                        </div>
+
+                        <button id="addLineBtn" class="btn btn-add-line">
+                            <span>+</span> Add New Line
+                        </button>
+                    </div>
+
+                    <!-- Text Styling Tab -->
+                    <div class="tool-pane" id="styling-pane">
+                        <div class="styling-grid">
+                            <div class="control-group">
+                                <label for="fontFamily">Font Family</label>
+                                <select id="fontFamily" class="styled-select">
+                                    <option value="'Poppins', sans-serif">Poppins</option>
+                                    <option value="'Inter', sans-serif">Inter</option>
+                                    <option value="'Outfit', sans-serif">Outfit</option>
+                                    <option value="'Bebas Neue', cursive">Bebas Neue</option>
+                                    <option value="'Playfair Display', serif">Playfair Display</option>
+                                    <option value="'Roboto Mono', monospace">Roboto Mono</option>
+                                </select>
+                            </div>
+
+                            <div class="control-group">
+                                <label for="fontSize">Font Size: <span id="fontSizeValue">48</span>px</label>
+                                <input type="range" id="fontSize" min="24" max="200" value="48" class="styled-range">
+                            </div>
+
+                            <div class="control-group">
+                                <label for="textColor">Text Color</label>
+                                <div class="color-picker-wrapper">
+                                    <input type="color" id="textColor" value="#ffffff" class="color-picker">
+                                    <div class="color-presets">
+                                        <button class="color-preset" data-color="#ffffff"
+                                            style="background: #ffffff"></button>
+                                        <button class="color-preset" data-color="#8B5CF6"
+                                            style="background: #8B5CF6"></button>
+                                        <button class="color-preset" data-color="#EC4899"
+                                            style="background: #EC4899"></button>
+                                        <button class="color-preset" data-color="#06B6D4"
+                                            style="background: #06B6D4"></button>
+                                        <button class="color-preset" data-color="#10B981"
+                                            style="background: #10B981"></button>
+                                        <button class="color-preset" data-color="#F59E0B"
+                                            style="background: #F59E0B"></button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <label for="textGlow">Glow Effect</label>
+                                <select id="textGlow" class="styled-select">
+                                    <option value="none">None</option>
+                                    <option value="soft">Soft Glow</option>
+                                    <option value="intense">Intense Glow</option>
+                                    <option value="neon">Neon</option>
+                                </select>
+                            </div>
+
+                            <div class="control-group">
+                                <label for="textShadow">Text Shadow</label>
+                                <select id="textShadow" class="styled-select">
+                                    <option value="none">None</option>
+                                    <option value="light">Light</option>
+                                    <option value="dark">Dark</option>
+                                    <option value="3d">3D Effect</option>
+                                </select>
+                            </div>
+
+                            <div class="control-group">
+                                <label for="textAnimation">Animation Style</label>
+                                <select id="textAnimation" class="styled-select">
+                                    <option value="typewriter">Typewriter</option>
+                                    <option value="fadeIn">Fade In</option>
+                                    <option value="slideUp">Slide Up</option>
+                                    <option value="bounce">Bounce</option>
+                                    <option value="glow">Glow Pulse</option>
+                                    <option value="none">None (Instant)</option>
+                                </select>
+                            </div>
+
+                            <div class="control-group">
+                                <label for="charDelay">Character Delay: <span id="charDelayValue">80</span>ms</label>
+                                <input type="range" id="charDelay" min="20" max="200" value="80" class="styled-range">
+                            </div>
+
+                            <div class="control-group">
+                                <label>Text Position</label>
+                                <div class="position-controls">
+                                    <div class="position-slider-group">
+                                        <label for="textPositionX">Horizontal (X): <span
+                                                id="textPositionXValue">50</span>%</label>
+                                        <input type="range" id="textPositionX" min="5" max="95" value="50"
+                                            class="styled-range">
+                                    </div>
+                                    <div class="position-slider-group">
+                                        <label for="textPositionY">Vertical (Y): <span
+                                                id="textPositionYValue">50</span>%</label>
+                                        <input type="range" id="textPositionY" min="5" max="95" value="50"
+                                            class="styled-range">
+                                    </div>
+                                    <div class="position-presets">
+                                        <button class="position-preset-btn" data-x="50" data-y="20"
+                                            title="Top">↑</button>
+                                        <button class="position-preset-btn" data-x="50" data-y="50"
+                                            title="Center">●</button>
+                                        <button class="position-preset-btn" data-x="50" data-y="80"
+                                            title="Bottom">↓</button>
+                                        <button class="position-preset-btn" data-x="20" data-y="50"
+                                            title="Left">←</button>
+                                        <button class="position-preset-btn" data-x="80" data-y="50"
+                                            title="Right">→</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <label>Templates</label>
+                                <div class="templates-grid">
+                                    <button class="template-btn" data-template="neon-glow" title="Neon Glow">🌟
+                                        Neon</button>
+                                    <button class="template-btn" data-template="clean-minimal" title="Clean Minimal">✨
+                                        Clean</button>
+                                    <button class="template-btn" data-template="bold-impact" title="Bold Impact">💥
+                                        Bold</button>
+                                    <button class="template-btn" data-template="retro-vibes" title="Retro Vibes">🎸
+                                        Retro</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Background Tab -->
+                    <div class="tool-pane" id="background-pane">
+                        <div class="background-grid">
+                            <div class="control-group">
+                                <label>Background Type</label>
+                                <div class="bg-type-toggle">
+                                    <button id="bgTypeImage" class="bg-type-btn active">Image</button>
+                                    <button id="bgTypeGradient" class="bg-type-btn">Gradient</button>
+                                    <button id="bgTypeSolid" class="bg-type-btn">Solid</button>
+                                </div>
+                            </div>
+
+                            <div id="imageUploadSection" class="control-group">
+                                <label for="bgImageInput">Upload Image</label>
+                                <div class="file-upload-wrapper">
+                                    <input type="file" id="bgImageInput" accept="image/*" class="file-input">
+                                    <div class="file-upload-btn">
+                                        <span>📁</span> Choose Image
+                                    </div>
+                                    <span id="fileName" class="file-name">No file selected</span>
+                                </div>
+                            </div>
+
+                            <div id="gradientSection" class="control-group hidden">
+                                <label>Gradient Preset</label>
+                                <div class="gradient-presets">
+                                    <!-- Cool Tones -->
+                                    <button class="gradient-preset"
+                                        data-gradient="linear-gradient(135deg, #0cebeb 0%, #20e3b2 50%, #29ffc6 100%)"
+                                        title="Cyan Dream"
+                                        style="background: linear-gradient(135deg, #0cebeb 0%, #20e3b2 50%, #29ffc6 100%)"></button>
+                                    <button class="gradient-preset"
+                                        data-gradient="linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
+                                        title="Blue Sky"
+                                        style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"></button>
+                                    <button class="gradient-preset"
+                                        data-gradient="linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)"
+                                        title="Mint Fresh"
+                                        style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)"></button>
+                                    <button class="gradient-preset"
+                                        data-gradient="linear-gradient(135deg, #30cfd0 0%, #330867 100%)"
+                                        title="Deep Sea"
+                                        style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%)"></button>
+
+                                    <!-- Warm Tones -->
+                                    <button class="gradient-preset"
+                                        data-gradient="linear-gradient(135deg, #fad0c4 0%, #ffd1ff 100%)"
+                                        title="Cotton Candy"
+                                        style="background: linear-gradient(135deg, #fad0c4 0%, #ffd1ff 100%)"></button>
+                                    <button class="gradient-preset"
+                                        data-gradient="linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%)"
+                                        title="Pinky Promise"
+                                        style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%)"></button>
+                                    <button class="gradient-preset"
+                                        data-gradient="linear-gradient(135deg, #f6d365 0%, #fda085 100%)"
+                                        title="Sunset Glow"
+                                        style="background: linear-gradient(135deg, #f6d365 0%, #fda085 100%)"></button>
+                                    <button class="gradient-preset"
+                                        data-gradient="linear-gradient(135deg, #ff0844 0%, #ffb199 100%)"
+                                        title="Red Passion"
+                                        style="background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%)"></button>
+
+                                    <!-- Dark & Moody -->
+                                    <button class="gradient-preset active"
+                                        data-gradient="linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%)"
+                                        title="Midnight"
+                                        style="background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%)"></button>
+                                    <button class="gradient-preset"
+                                        data-gradient="linear-gradient(135deg, #243949 0%, #517fa4 100%)"
+                                        title="Steel Blue"
+                                        style="background: linear-gradient(135deg, #243949 0%, #517fa4 100%)"></button>
+                                    <button class="gradient-preset"
+                                        data-gradient="linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)"
+                                        title="Deep Space"
+                                        style="background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)"></button>
+                                    <button class="gradient-preset"
+                                        data-gradient="linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%)"
+                                        title="Electric Violet"
+                                        style="background: linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%)"></button>
+                                </div>
+
+                                <div class="control-group" style="margin-top: 1rem;">
+                                    <div class="toggle-switch">
+                                        <input type="checkbox" id="gradientAnimation" />
+                                        <label for="gradientAnimation">
+                                            <span class="toggle-track"></span>
+                                        </label>
+                                        <span class="toggle-label">Animate Gradient</span>
+                                    </div>
+                                    <div id="gradientSpeedControl" class="hidden"
+                                        style="margin-top: 0.5rem; transition: var(--transition-normal);">
+                                        <label for="gradientSpeed" style="font-size: 0.8rem;">Animation Speed</label>
+                                        <input type="range" id="gradientSpeed" min="0.1" max="5" step="0.1" value="0.5"
+                                            class="styled-range">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="solidColorSection" class="control-group hidden">
+                                <label for="bgSolidColor">Background Color</label>
+                                <input type="color" id="bgSolidColor" value="#1a1a2e" class="color-picker">
+                            </div>
+
+                            <div class="control-group">
+                                <label for="bgBlur">Blur: <span id="bgBlurValue">0</span>px</label>
+                                <input type="range" id="bgBlur" min="0" max="20" value="0" class="styled-range">
+                            </div>
+
+                            <div class="control-group">
+                                <label for="bgOverlay">Overlay Opacity: <span id="bgOverlayValue">40</span>%</label>
+                                <input type="range" id="bgOverlay" min="0" max="100" value="40" class="styled-range">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Bulk Import Modal -->
+        <div id="bulkImportModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Bulk Import Lyrics</h3>
+                    <button class="modal-close" id="closeBulkImport">&times;</button>
+                </div>
+                <textarea id="bulkLyricsInput" placeholder="Paste your lyrics here (one line per lyric)..."></textarea>
+                <div class="modal-footer">
+                    <input type="number" id="defaultDelay" value="2" min="0.5" max="10" step="0.5"
+                        title="Default delay (seconds)">
+                    <span>sec delay</span>
+                    <button id="importLyricsBtn" class="btn btn-primary">Import</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Confirmation Modal -->
+        <div id="confirmModal" class="modal hidden">
+            <div class="modal-content modal-sm">
+                <div class="modal-header">
+                    <h3>⚠️ Confirm Action</h3>
+                    <button class="modal-close" id="closeConfirmModal">&times;</button>
+                </div>
+                <p id="confirmMessage">Are you sure you want to proceed?</p>
+                <div class="modal-footer">
+                    <button id="confirmCancel" class="btn btn-secondary">Cancel</button>
+                    <button id="confirmOk" class="btn btn-primary btn-danger">Confirm</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Keyboard Shortcuts Modal -->
+        <div id="helpModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>⌨️ Keyboard Shortcuts</h3>
+                    <button class="modal-close" id="closeHelpModal">&times;</button>
+                </div>
+                <div class="shortcuts-list">
+                    <div class="shortcut-item"><kbd>Space</kbd> <span>Play / Pause</span></div>
+                    <div class="shortcut-item"><kbd>Escape</kbd> <span>Stop</span></div>
+                    <div class="shortcut-item"><kbd>Ctrl+Z</kbd> <span>Undo</span></div>
+                    <div class="shortcut-item"><kbd>Ctrl+Y</kbd> <span>Redo</span></div>
+                    <div class="shortcut-item"><kbd>Ctrl+S</kbd> <span>Save Project</span></div>
+                    <div class="shortcut-item"><kbd>Ctrl+Shift+S</kbd> <span>Export Project</span></div>
+                    <div class="shortcut-item"><kbd>Ctrl+O</kbd> <span>Import Project</span></div>
+                    <div class="shortcut-item"><kbd>Ctrl+N</kbd> <span>New Lyric Line</span></div>
+                    <div class="shortcut-item"><kbd>Ctrl+V</kbd> <span>Paste from Clipboard</span></div>
+                    <div class="shortcut-item"><kbd>?</kbd> <span>Show Help</span></div>
+                    <div class="shortcut-item"><kbd>Tab</kbd> <span>Navigate Inputs</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Auto-save indicator -->
+        <div id="autoSaveIndicator" class="auto-save-indicator hidden">
+            <span>💾 Saved</span>
+        </div>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>Made with 💜 for content creators</p>
+        </footer>
+    </div>
+
+    <script src="video-renderer.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
