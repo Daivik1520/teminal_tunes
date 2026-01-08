@@ -1,4 +1,4 @@
-#🎵 VerseFlow
+🎵 VerseFlow
 
 VerseFlow is a powerful, browser-based lyric video creator that allows content creators to generate professional-grade visualizers directly from the web. With support for 4K export, custom animations, and multiple aspect ratios, it bridges the gap between complex video editing software and quick social media content creation.
 
